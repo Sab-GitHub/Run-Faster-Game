@@ -1,11 +1,10 @@
 import pygame
-import time
 
 pygame.font.init()
 
 class Timer:
     def __init__(self, win_width, win_height):
-        self.timer_start = time.time()
+        self.lvl_started = False
         self.lvl_not_ended = True
 
         self.box_width = win_width // 5
@@ -16,23 +15,25 @@ class Timer:
 
         self.text_font_size = (win_width + win_height) // 35
         self.font = pygame.font.SysFont('Courier', self.text_font_size)
+        self.update_timer_text('0.00')
 
-    def update_timer_text(self):
-        curr_time = time.time()
-        timer_curr = curr_time - self.timer_start
-        timer_img = self.font.render(f'{timer_curr:.2f}', True, (255, 255, 255))
-
+    def update_timer_text(self, timer_text):
         self.box.fill(self.box_color)
-        x = self.box.get_width() // 2 - timer_img.get_width() // 2
-        y = self.box.get_height() // 2 - timer_img.get_height() // 2
-        self.box.blit(timer_img, (x, y))
+        self.timer_img = self.font.render(timer_text, True, (255, 255, 255))
+
+        font_size_x, font_size_y = self.font.size(timer_text)
+        timer_img_x = self.box_width // 2 - font_size_x // 2
+        timer_img_y = self.box_height // 2 - font_size_y // 2
+
+        self.box.blit(self.timer_img, (timer_img_x, timer_img_y))
+
+    def start_timer(self):
+        self.timer_start = pygame.time.get_ticks()
 
     def update_timer(self, player, end_block):
-        if self.lvl_not_ended:
+        if self.lvl_started and self.lvl_not_ended:
             if player.rect.colliderect(end_block):
-                timer_end = time.time()
                 self.lvl_not_ended = False
-                return
 
-            else:
-                self.update_timer_text()
+            timer_curr = (pygame.time.get_ticks() - self.timer_start) / 1000 # Millseconds / 1000 = Seconds
+            self.update_timer_text(f'{timer_curr:.2f}')

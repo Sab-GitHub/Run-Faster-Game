@@ -1,14 +1,21 @@
 import pygame
 
 class Player:
-    WIDTH = 20
-    HEIGHT = 30
+    WIDTH = 30
+    HEIGHT = 40
     COLOR = (200, 0, 200)
 
-    SPEED = 5
-    GRAVITY = 1/10
-    MAX_FALL_SPEED = 30
-    JUMP_FORCE = 10
+    SPEED = 0.5
+    GRAVITY = 0.0001
+    MAX_FALL_SPEED = 3
+    JUMP_FORCE = 0.1
+
+    CONTROLS = {
+        'left': pygame.K_a,
+        'right': pygame.K_d,
+        'w_jump': pygame.K_w,
+        'space_jump': pygame.K_SPACE
+    }
 
     def __init__(self):
         self.rect = pygame.Rect((0, 0), (self.WIDTH, self.HEIGHT))
@@ -16,6 +23,10 @@ class Player:
         self.vy = 0
         self.fall_count = 0
         self.is_grounded = False
+        self.surface = pygame.Surface((self.WIDTH, self.HEIGHT))
+
+        self.img = pygame.image.load('assets/s_player_idle.gif')
+        self.img = pygame.transform.scale(self.img, (self.WIDTH, self.HEIGHT))
 
     def check_collision(self, platforms, axis):
         if axis == 'x':
@@ -38,7 +49,7 @@ class Player:
                     elif self.vy < 0: # Going up
                         self.rect.top = platform.bottom
 
-    def move(self, move_inputs, platforms):
+    def move(self, move_inputs, dt, platforms):
         self.vx = 0
 
         if self.is_grounded:
@@ -48,18 +59,22 @@ class Player:
             self.fall_count += 1
             self.vy = min(self.vy + self.fall_count * self.GRAVITY, self.MAX_FALL_SPEED)            
 
-        if move_inputs[pygame.K_a]:
+        if move_inputs[self.CONTROLS['left']]:
             self.vx += -self.SPEED
 
-        if move_inputs[pygame.K_d]:
+        if move_inputs[self.CONTROLS['right']]:
             self.vx += self.SPEED
 
-        if move_inputs[pygame.K_w] or move_inputs[pygame.K_SPACE]:
+        if move_inputs[self.CONTROLS['w_jump']] or move_inputs[self.CONTROLS['space_jump']]:
             if self.is_grounded:
                 self.vy -= self.JUMP_FORCE
 
-        self.rect.y += self.vy
+        self.rect.y += round(self.vy * dt)
         self.check_collision(platforms, 'y')
 
-        self.rect.x += self.vx
+        self.rect.x += round(self.vx * dt)
         self.check_collision(platforms, 'x')
+
+    def animate(self):
+        self.img_boundry = self.img.get_rect()
+        self.surface.blit(self.img, (self.img_boundry.x, self.img_boundry.y))

@@ -8,21 +8,35 @@ SKIP_CHARS = {'|', ' '}
 LVL_CHARS = {
     'start': '(',
     'end': ')',
-    'platform': '-'
+    'grass_block': '-'
+}
+lvl_img_paths = {
+    # type: (file_path, (x, y), (width, height))
+    'grass_block': ('assets/s_dirt_tileset.png', [(97, 95), (14, 15)])
 }
 
 def get_level(file_path):
     with open(file_path, 'r') as f:
-        level = f.read()
+        level = f.read().replace('|', '')
     layers = level.splitlines()
     return layers
 
+def load_img(obj, width, height):
+    img = pygame.image.load(lvl_img_paths[obj][0])
+    img = img.subsurface(lvl_img_paths[obj][1])
+    img = pygame.transform.scale(img, (width, height))
+    return img
+
 def load_level(width, height, layers):
-    surface = pygame.Surface((width, height))
-    surface.fill((0, 0, 0))
+    lvl_surface = pygame.Surface((width, height))
+    lvl_surface.fill((0, 0, 0))
 
     row_height = height // len(layers)
     col_width = width // len(layers[0])
+
+    platform_surface = pygame.Surface((col_width, row_height))
+    platform_img = pygame.image.load('assets/s_dirt_tileset.png')
+    platform_surface.blit(platform_img, (0, 0))
 
     platforms = []
     for row in range(len(layers)):
@@ -31,17 +45,20 @@ def load_level(width, height, layers):
                 x = col * col_width
                 y = row * row_height
 
-                if layers[row][col] == LVL_CHARS['platform']:
+                if layers[row][col] == LVL_CHARS['grass_block']:
                     platform = pygame.rect.Rect((x, y), (col_width, row_height))
                     platforms.append(platform)
-                    pygame.draw.rect(surface, WHITE, platform)
+
+                    img = load_img('grass_block', col_width, row_height) # Same width and height as for platform to scale size.
+                    lvl_surface.blit(img, platform)
+                    # pygame.draw.rect(lvl_surface, WHITE, platform)
 
                 elif layers[row][col] == LVL_CHARS['start']:
                     start = (x + col_width // 2, y + row_height // 2)
-                    pygame.draw.rect(surface, GREEN, (x, y, col_width, row_height))
+                    pygame.draw.rect(lvl_surface, GREEN, (x, y, col_width, row_height))
 
                 elif layers[row][col] == LVL_CHARS['end']:
                     end_block = pygame.rect.Rect((x, y), (col_width, row_height))
-                    pygame.draw.rect(surface, RED, end_block)
+                    pygame.draw.rect(lvl_surface, RED, end_block)
 
-    return surface, platforms, start, end_block
+    return lvl_surface, platforms, start, end_block
