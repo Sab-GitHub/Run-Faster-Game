@@ -3,17 +3,19 @@ import pygame
 pygame.font.init()
 
 class Timer:
-    def __init__(self, win_width, win_height):
-        self.lvl_started = False
+    def __init__(self, win_width, ui_height):
+        self.timer_start = None
+        self.timer_started = False
+        self.timer_started_once = False
         self.lvl_not_ended = True
 
         self.box_width = win_width // 5
-        self.box_height = win_height // 10
-        self.box_pos = (win_width // 2 - self.box_width // 2, win_height - self.box_height)
+        self.box_height = ui_height
+        self.box_pos = (win_width // 2 - self.box_width // 2, 0)
         self.box = pygame.Surface((self.box_width, self.box_height))
         self.box_color = (0, 0, 255)
 
-        self.text_font_size = (win_width + win_height) // 35
+        self.text_font_size = (self.box_width + self.box_height) // 6
         self.font = pygame.font.SysFont('Courier', self.text_font_size)
         self.update_timer_text('0.00')
 
@@ -27,13 +29,17 @@ class Timer:
 
         self.box.blit(self.timer_img, (timer_img_x, timer_img_y))
 
-    def start_timer(self):
-        self.timer_start = pygame.time.get_ticks()
-
-    def update_timer(self, player, end_block):
-        if self.lvl_started and self.lvl_not_ended:
+    def update_timer(self, now_time, player, end_block):
+        if self.timer_started and self.lvl_not_ended:
             if player.rect.colliderect(end_block):
                 self.lvl_not_ended = False
 
-            timer_curr = (pygame.time.get_ticks() - self.timer_start) / 1000 # Millseconds / 1000 = Seconds
-            self.update_timer_text(f'{timer_curr:.2f}')
+            elapsed_time = (now_time - self.timer_start) / 1000
+            self.update_timer_text(f'{elapsed_time:.2f}')
+
+    def reset(self):
+        self.timer_start = None
+        self.timer_started = False
+        self.timer_started_once = False
+        self.lvl_not_ended = True
+        self.update_timer_text('0.00')

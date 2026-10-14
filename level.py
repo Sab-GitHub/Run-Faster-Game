@@ -15,11 +15,18 @@ lvl_img_paths = {
     'grass_block': ('assets/s_dirt_tileset.png', [(97, 95), (14, 15)])
 }
 
+def get_ui_height(win_height):
+    ui_height = win_height // 10
+    return ui_height
+
 def get_level(file_path):
     with open(file_path, 'r') as f:
         level = f.read().replace('|', '')
     layers = level.splitlines()
-    return layers
+
+    at = layers[0] # Author time
+    pb = layers[1] # Personal best time
+    return layers[2:], at, pb
 
 def load_img(obj, width, height):
     img = pygame.image.load(lvl_img_paths[obj][0])
