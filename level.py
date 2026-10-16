@@ -38,8 +38,8 @@ def load_level(width, height, layers):
     lvl_surface = pygame.Surface((width, height))
     lvl_surface.fill((0, 0, 0))
 
-    row_height = height // len(layers)
-    col_width = width // len(layers[0])
+    row_height = height / len(layers)
+    col_width = width / len(layers[0])
 
     platform_surface = pygame.Surface((col_width, row_height))
     platform_img = pygame.image.load('assets/s_dirt_tileset.png')
@@ -49,8 +49,10 @@ def load_level(width, height, layers):
     for row in range(len(layers)):
         for col in range(len(layers[0])):
             if layers[row][col] not in SKIP_CHARS:
-                x = col * col_width
-                y = row * row_height
+                # x = int(col * col_width)
+                # y = int(row * row_height)
+                x = col * int(col_width)
+                y = row * int(row_height)
 
                 if layers[row][col] == LVL_CHARS['grass_block']:
                     platform = pygame.rect.Rect((x, y), (col_width, row_height))
@@ -58,7 +60,6 @@ def load_level(width, height, layers):
 
                     img = load_img('grass_block', col_width, row_height) # Same width and height as for platform to scale size.
                     lvl_surface.blit(img, platform)
-                    # pygame.draw.rect(lvl_surface, WHITE, platform)
 
                 elif layers[row][col] == LVL_CHARS['start']:
                     start = (x + col_width // 2, y + row_height // 2)
